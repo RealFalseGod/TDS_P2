@@ -1,0 +1,9 @@
+# Ignore .env file
+.env
+
+# Ignore CSV files
+*.csv
+
+# Optional: Ignore other sensitive or large files
+*.log
+__pycache__/
