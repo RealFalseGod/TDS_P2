@@ -7,7 +7,8 @@
 #   "httpx",
 #   "chardet",
 #   "python-dotenv",
-#   "ipykernel"
+#   "ipykernel",
+#   "numpy"
 # ]
 # ///
 
@@ -20,7 +21,7 @@ import httpx
 import chardet
 from pathlib import Path
 import logging
-
+import numpy as np
 from dotenv import load_dotenv
 load_dotenv()
 
