@@ -7,6 +7,7 @@
 #   "httpx",
 #   "chardet",
 #   "python-dotenv",
+#   "ipykernel"
 # ]
 # ///
 
