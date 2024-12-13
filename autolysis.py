@@ -109,34 +109,71 @@ def analyze_data(df, token):
     return analysis, suggestions
 
 def visualize_data(df, output_dir, analysis):
-    """Generate and save visualizations."""
-    sns.set(style="whitegrid")
+    """Generate and save enhanced visualizations."""
+    sns.set(style="whitegrid", palette="muted")
     numeric_columns = df.select_dtypes(include=['number']).columns
 
-    if not numeric_columns.empty:
-        output_dir.mkdir(parents=True, exist_ok=True)
+    # Ensure output directory exists
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Distribution plots
+    if not numeric_columns.empty:
+        # 1. Distribution Plots
         for column in numeric_columns:
             plt.figure(figsize=(6, 6))
-            sns.histplot(df[column].dropna(), kde=True)
-            plt.title(f'Distribution of {column}')
+            sns.histplot(df[column].dropna(), kde=True, color='steelblue', bins=30)
+            plt.title(f'Distribution of {column}', fontsize=14)
+            plt.xlabel(column, fontsize=12)
+            plt.ylabel('Frequency', fontsize=12)
+            plt.tight_layout()
             file_name = output_dir / f'{column}_distribution.png'
             plt.savefig(file_name, dpi=100)
             logging.info(f"Saved distribution plot: {file_name}")
             plt.close()
 
-        # Correlation heatmap
-        plt.figure(figsize=(6, 6))
+        # 2. Correlation Heatmap
+        plt.figure(figsize=(8, 8))
         corr = df[numeric_columns].corr()
-        sns.heatmap(corr, annot=True, cmap='coolwarm', square=True)
-        plt.title('Correlation Heatmap')
+        mask = np.triu(np.ones_like(corr, dtype=bool))
+        sns.heatmap(
+            corr, mask=mask, annot=True, fmt=".2f", cmap='coolwarm', cbar=True, square=True,
+            linewidths=0.5, annot_kws={"size": 10}
+        )
+        plt.title('Correlation Heatmap', fontsize=16)
         file_name = output_dir / 'correlation_heatmap.png'
+        plt.tight_layout()
         plt.savefig(file_name, dpi=100)
         logging.info(f"Saved correlation heatmap: {file_name}")
         plt.close()
+
+        # 3. Pairplot (if manageable size)
+        if len(numeric_columns) <= 5:  # To avoid overwhelming plots
+            pairplot = sns.pairplot(df[numeric_columns], diag_kind="kde", corner=True)
+            pairplot.fig.suptitle("Pairwise Relationships", y=1.02, fontsize=16)
+            file_name = output_dir / 'pairplot.png'
+            pairplot.savefig(file_name, dpi=100)
+            logging.info(f"Saved pairplot: {file_name}")
+            plt.close()
+
     else:
         logging.warning("No numeric columns found for visualization.")
+
+    # 4. Bar Plot for Categorical Columns
+    categorical_columns = df.select_dtypes(include=['object', 'category']).columns
+    for column in categorical_columns:
+        if df[column].nunique() <= 10:  # Limit to small categories for readability
+            plt.figure(figsize=(8, 6))
+            sns.countplot(data=df, x=column, palette="muted", order=df[column].value_counts().index)
+            plt.title(f'Count of Each Category in {column}', fontsize=14)
+            plt.xlabel(column, fontsize=12)
+            plt.ylabel('Count', fontsize=12)
+            plt.xticks(rotation=45, ha="right", fontsize=10)
+            plt.tight_layout()
+            file_name = output_dir / f'{column}_countplot.png'
+            plt.savefig(file_name, dpi=100)
+            logging.info(f"Saved bar plot: {file_name}")
+            plt.close()
+
+    logging.info("All visualizations generated successfully.")
 
 def generate_narrative(analysis, token, file_path):
     """Generate narrative using LLM."""
