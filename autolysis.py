@@ -20,8 +20,8 @@ import httpx
 import chardet
 from pathlib import Path
 import logging
-from dotenv import load_dotenv
 
+from dotenv import load_dotenv
 load_dotenv()
 
 # Setup logging
