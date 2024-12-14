@@ -261,8 +261,14 @@ def question_llm(prompt, context):
 def main(csv_file):
     print("Starting the analysis...")  # Debugging line
 
-    # Set the API token as an environment variable
-  
+    # Get the base name of the CSV file without extension
+    base_name = os.path.splitext(os.path.basename(csv_file))[0]
+    output_dir = os.path.join(".", base_name)
+
+    # Create a directory named after the CSV file (without extension)
+    os.makedirs(output_dir, exist_ok=True)
+    print(f"Output directory: {output_dir}")
+
     # Try reading the CSV file with 'ISO-8859-1' encoding to handle special characters
     try:
         df = pd.read_csv(csv_file, encoding='ISO-8859-1')
@@ -283,17 +289,16 @@ def main(csv_file):
     print("Outliers detected:")
     print(outliers)
 
-    output_dir = "."
-    os.makedirs(output_dir, exist_ok=True)
-
-    # Visualize the data and check output paths
+    # Visualize the data and save files in the output directory
     heatmap_file, outliers_file, dist_plot_file = visualize_data(corr_matrix, outliers, df, output_dir)
 
     print("Visualizations saved.")
 
     # Generate the story using the LLM
-    story = question_llm("Generate a nice and creative story from the analysis", 
-                         context=f"Dataset Analysis:\nSummary Statistics:\n{summary_stats}\n\nMissing Values:\n{missing_values}\n\nCorrelation Matrix:\n{corr_matrix}\n\nOutliers:\n{outliers}")
+    story = question_llm(
+        "Generate a nice and creative story from the analysis",
+        context=f"Dataset Analysis:\nSummary Statistics:\n{summary_stats}\n\nMissing Values:\n{missing_values}\n\nCorrelation Matrix:\n{corr_matrix}\n\nOutliers:\n{outliers}"
+    )
 
     # Create the README file with the analysis and the story
     readme_file = create_readme(summary_stats, missing_values, corr_matrix, outliers, output_dir)
