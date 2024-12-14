@@ -8,7 +8,8 @@
 #   "chardet",
 #   "python-dotenv",
 #   "ipykernel",
-#   "numpy"
+#   "numpy",
+#   "chardet"
 # ]
 # ///
 
